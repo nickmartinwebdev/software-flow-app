@@ -9,7 +9,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy manifest files
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
+
+# Create a dummy main.rs to build dependencies
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+
+# Build dependencies (this will create Cargo.lock)
+RUN cargo build --release && rm -rf src/
 
 # Copy source code
 COPY src ./src
