@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MEILISEARCH_URL=http://meilisearch:7700
+      - MEILISEARCH_KEY=${MEILISEARCH_KEY:-}
+      - PORT=8000
+    depends_on:
+      - meilisearch
+    networks:
+      - app-network
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.5
+    ports:
+      - "7700:7700"
+    environment:
+      - MEILI_ENV=development
+      - MEILI_MASTER_KEY=${MEILISEARCH_KEY:-masterKey}
+    volumes:
+      - meilisearch_data:/meili_data
+    networks:
+      - app-network
+
+volumes:
+  meilisearch_data:
+
+networks:
+  app-network:
+    driver: bridge
